@@ -1,4 +1,5 @@
 import dash
+import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
 
@@ -34,9 +35,20 @@ app.layout = html.Div([
         options=[{'label': i, 'value': i} for i in ['LA', 'NYC', 'MTL']],
         value='LA'
     ),
-    html.Div(id='display-value')
+    html.Div(id='display-value'),
+    html.H2('Raw sensor data'),
+    dash_table.DataTable(
+        id='sensor_data',
+        columns=[{"name": i, "id": i} for i in df_sensor_data.columns],
+        data=df_sensor_data.to_dict('records'),
+    ),
+    html.H2('Raw sensor locations'),
+    dash_table.DataTable(
+        id='sensor_locations',
+        columns=[{"name": i, "id": i} for i in df_sensor_locations.columns],
+        data=df_sensor_locations.to_dict('records'),
+    )
 ])
-
 
 @app.callback(dash.dependencies.Output('display-value', 'children'),
               [dash.dependencies.Input('dropdown', 'value')])

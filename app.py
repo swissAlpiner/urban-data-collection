@@ -60,7 +60,34 @@ map_locations.update_layout(
 app.layout = html.Div([
     dcc.Tabs([
         dcc.Tab(label='Sensor Data', children=[
-            html.H3('Sensor Data')
+            html.H3('Sensor Data'),
+            html.H4('Choose sensor'),
+            dcc.Dropdown(
+                id='dropdown_location',
+                options=[{'label': row['name'] + ' (ID: ' + str(row['id']) + ')', 'value': row['id']} for index, row in
+                         df_sensor_locations.iterrows()]
+            ),
+            dcc.RadioItems(
+                id='bin',
+                options=[{'label': i, 'value': i} for i in [
+                    'Yearly', 'Seasonally', 'Monthly', 'Weekly'
+                ]],
+                value='Yearly',
+                labelStyle={'display': 'inline'}
+            ),
+            html.Div([
+                html.Div(
+                    className='six columns',
+                    children=dcc.Graph(id='cars-over-time')
+                ),
+                html.Div(
+                    className='six columns',
+                    children=dcc.Graph(id='map', animate=True)
+                )
+            ]),
+            html.Div([
+                html.Iframe(id='datatable', height=500, width=1200)
+            ]),
         ]),
         dcc.Tab(label='Sensor Locations', children=[
             html.H3('Sensor Locations'),
@@ -92,6 +119,91 @@ app.layout = html.Div([
 ])
 
 
+# bar char callback
+@app.callback(
+    dash.dependencies.Output('cars-over-time', 'figure'),
+    [dash.dependencies.Input('bin', 'value'),
+     dash.dependencies.Input('dropdown_location', 'value')])
+def display_cars_over_time(bin, dropdown_location):
+    df = df_sensor_data
+    if dropdown_location:
+        df = df_sensor_data[df_sensor_data['sensor_locations_id'] == dropdown_location]
+    return {
+        'data': [
+            {
+                'x': df['observing_datetime'],
+                'customdata': df['sensor_locations_id'],
+                'name': 'Open Date',
+                'type': 'histogram',
+                'autobinx': False,
+                'xbins': {
+                    'start': '2020-01-01',
+                    'end': '2020-12-31',
+                    'size': (
+                        'M12' if bin == 'Yearly' else
+                        'M3' if bin == 'Seasonally' else
+                        'M1' if bin == 'Monthly' else
+                        1000 * 60 * 60 * 24 * 7  # Weekly
+                    )
+                }
+            }
+        ],
+        'layout': {
+            'margin': {'l': 40, 'r': 20, 't': 0, 'b': 30}
+        }
+    }
+
+
+
+# map callback
+@app.callback(
+    dash.dependencies.Output('map', 'figure'),
+    [dash.dependencies.Input('cars-over-time', 'selectedData'),
+     dash.dependencies.Input('dropdown_location', 'value')])
+def display_map(selected_points, dropdown_location):
+    df = df_sensor_locations
+    if dropdown_location:
+        df = df_sensor_locations[df_sensor_locations['id'] == dropdown_location]
+    selected_indices = []
+    if selected_points:
+        for bin in selected_points['points']:
+            selected_indices += bin['pointNumbers']
+    return {
+        'data': [{
+            'lat': df['lat'],
+            'lon': df['lng'],
+            'type': 'scattermapbox',
+            'selectedpoints': selected_indices,
+            'selected': {
+                'marker': {'color': '#85144b'}
+            },
+            'text': df['name']
+        }],
+        'layout': {
+            'mapbox': {
+                'center': {
+                    'lat': 47.3890,
+                    'lon': 8.1758
+                },
+                'zoom': 13,
+                'accesstoken': mapbox_access_token
+            },
+            'margin': {'l': 0, 'r': 0, 't': 0, 'b': 0}
+        }
+    }
+
+# sensor data debug callback
+@app.callback(
+    dash.dependencies.Output('datatable','srcDoc'),
+    [dash.dependencies.Input('cars-over-time', 'selectedData'),
+     dash.dependencies.Input('dropdown_location', 'value')])
+def display_sensor_data_debug(selected_points, dropdown_location):
+    df = df_sensor_data
+    if dropdown_location:
+        df = df_sensor_data[df_sensor_data['sensor_locations_id'] == dropdown_location]
+    return df.to_html()
+
+# Sandbox Dropdown callback
 @app.callback(dash.dependencies.Output('display-value', 'children'),
               [dash.dependencies.Input('dropdown', 'value')])
 def display_value(value):

@@ -5,6 +5,7 @@ import dash_html_components as html
 
 from sqlalchemy import create_engine
 import pandas as pd
+import plotly.graph_objects as go
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -28,6 +29,33 @@ df_sensor_locations = pd.read_sql("select * from sensor_locations", dbConnection
 
 pd.set_option('display.expand_frame_repr', False)
 
+# mapbox
+mapbox_access_token = open(".mapbox_token").read()
+map_locations = go.Figure(go.Scattermapbox(
+    lat=df_sensor_locations['lat'],
+    lon=df_sensor_locations['lng'],
+    mode='markers',
+    marker=go.scattermapbox.Marker(
+        size=9
+    ),
+    text=df_sensor_locations['name'],
+))
+
+map_locations.update_layout(
+    autosize=True,
+    hovermode='closest',
+    mapbox=dict(
+        accesstoken=mapbox_access_token,
+        bearing=0,
+        center=dict(
+            lat=47.3906,
+            lon=8.15965
+        ),
+        pitch=0,
+        zoom=10
+    ),
+)
+
 # build the app
 app.layout = html.Div([
     dcc.Tabs([
@@ -35,7 +63,8 @@ app.layout = html.Div([
             html.H3('Sensor Data')
         ]),
         dcc.Tab(label='Sensor Locations', children=[
-            html.H3('Sensor Locations')
+            html.H3('Sensor Locations'),
+            dcc.Graph(figure=map_locations)
         ]),
         dcc.Tab(label='Sandbox', children=[
             html.Div(id='tabs-content'),
@@ -61,6 +90,7 @@ app.layout = html.Div([
         ]),
     ]),
 ])
+
 
 @app.callback(dash.dependencies.Output('display-value', 'children'),
               [dash.dependencies.Input('dropdown', 'value')])

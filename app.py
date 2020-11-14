@@ -48,11 +48,11 @@ map_locations.update_layout(
         accesstoken=mapbox_access_token,
         bearing=0,
         center=dict(
-            lat=47.3906,
-            lon=8.15965
+            lat=47.3890,
+            lon=8.1758
         ),
         pitch=0,
-        zoom=10
+        zoom=13
     ),
 )
 

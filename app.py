@@ -24,9 +24,8 @@ ENDPOINT = "smart-city-lab-2020.cuvz2t3c3rzu.eu-central-1.rds.amazonaws.com"
 sql_engine = create_engine('mysql+pymysql://' + USER + ':' + PW + '@' + ENDPOINT + ':' + PORT + '/' + DBNAME)
 dbConnection = sql_engine.connect()
 
-df_sensor_data = pd.read_sql("select * from sensor_data", dbConnection);
-df_sensor_locations = pd.read_sql("select * from sensor_locations", dbConnection);
-
+df_sensor_data = pd.read_sql_table('sensor_data', dbConnection);
+df_sensor_locations = pd.read_sql_table('sensor_locations', dbConnection, parse_dates=['observing_datetime'])
 pd.set_option('display.expand_frame_repr', False)
 
 # mapbox

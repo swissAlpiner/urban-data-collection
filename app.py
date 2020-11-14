@@ -28,26 +28,38 @@ df_sensor_locations = pd.read_sql("select * from sensor_locations", dbConnection
 
 pd.set_option('display.expand_frame_repr', False)
 
+# build the app
 app.layout = html.Div([
-    html.H2('Hello World'),
-    dcc.Dropdown(
-        id='dropdown',
-        options=[{'label': i, 'value': i} for i in ['LA', 'NYC', 'MTL']],
-        value='LA'
-    ),
-    html.Div(id='display-value'),
-    html.H2('Raw sensor data'),
-    dash_table.DataTable(
-        id='sensor_data',
-        columns=[{"name": i, "id": i} for i in df_sensor_data.columns],
-        data=df_sensor_data.to_dict('records'),
-    ),
-    html.H2('Raw sensor locations'),
-    dash_table.DataTable(
-        id='sensor_locations',
-        columns=[{"name": i, "id": i} for i in df_sensor_locations.columns],
-        data=df_sensor_locations.to_dict('records'),
-    )
+    dcc.Tabs([
+        dcc.Tab(label='Sensor Data', children=[
+            html.H3('Sensor Data')
+        ]),
+        dcc.Tab(label='Sensor Locations', children=[
+            html.H3('Sensor Locations')
+        ]),
+        dcc.Tab(label='Sandbox', children=[
+            html.Div(id='tabs-content'),
+            html.H2('Hello World'),
+            dcc.Dropdown(
+                id='dropdown',
+                options=[{'label': i, 'value': i} for i in ['LA', 'NYC', 'MTL']],
+                value='LA'
+            ),
+            html.Div(id='display-value'),
+            html.H2('Raw sensor data'),
+            dash_table.DataTable(
+                id='sensor_data',
+                columns=[{"name": i, "id": i} for i in df_sensor_data.columns],
+                data=df_sensor_data.to_dict('records'),
+            ),
+            html.H2('Raw sensor locations'),
+            dash_table.DataTable(
+                id='sensor_locations',
+                columns=[{"name": i, "id": i} for i in df_sensor_locations.columns],
+                data=df_sensor_locations.to_dict('records'),
+            )
+        ]),
+    ]),
 ])
 
 @app.callback(dash.dependencies.Output('display-value', 'children'),

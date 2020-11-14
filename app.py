@@ -198,10 +198,12 @@ def display_map(selected_points, dropdown_location):
     [dash.dependencies.Input('cars-over-time', 'selectedData'),
      dash.dependencies.Input('dropdown_location', 'value')])
 def display_sensor_data_debug(selected_points, dropdown_location):
-    df = df_sensor_data
+    df_sensor = df_sensor_data
+    df_locations = df_sensor_locations
     if dropdown_location:
-        df = df_sensor_data[df_sensor_data['sensor_locations_id'] == dropdown_location]
-    return df.to_html()
+        df_sensor = df_sensor_data[df_sensor_data['sensor_locations_id'] == dropdown_location]
+        df_locations = df_sensor_locations[df_sensor_locations['id'] == dropdown_location]
+    return df_sensor.to_html()
 
 # Sandbox Dropdown callback
 @app.callback(dash.dependencies.Output('display-value', 'children'),

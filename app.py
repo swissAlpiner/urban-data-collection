@@ -95,12 +95,6 @@ app.layout = html.Div([
         ]),
         dcc.Tab(label='Sandbox', children=[
             html.Div(id='tabs-content'),
-            html.H2('Hello World'),
-            dcc.Dropdown(
-                id='dropdown',
-                options=[{'label': i, 'value': i} for i in ['LA', 'NYC', 'MTL']],
-                value='LA'
-            ),
             html.Div(id='display-value'),
             html.H2('Raw sensor data'),
             dash_table.DataTable(
@@ -154,7 +148,6 @@ def display_cars_over_time(bin, dropdown_location):
     }
 
 
-
 # map callback
 @app.callback(
     dash.dependencies.Output('map', 'figure'),
@@ -192,9 +185,10 @@ def display_map(selected_points, dropdown_location):
         }
     }
 
+
 # sensor data debug callback
 @app.callback(
-    dash.dependencies.Output('datatable','srcDoc'),
+    dash.dependencies.Output('datatable', 'srcDoc'),
     [dash.dependencies.Input('cars-over-time', 'selectedData'),
      dash.dependencies.Input('dropdown_location', 'value')])
 def display_sensor_data_debug(selected_points, dropdown_location):
@@ -204,12 +198,6 @@ def display_sensor_data_debug(selected_points, dropdown_location):
         df_sensor = df_sensor_data[df_sensor_data['sensor_locations_id'] == dropdown_location]
         df_locations = df_sensor_locations[df_sensor_locations['id'] == dropdown_location]
     return df_sensor.to_html()
-
-# Sandbox Dropdown callback
-@app.callback(dash.dependencies.Output('display-value', 'children'),
-              [dash.dependencies.Input('dropdown', 'value')])
-def display_value(value):
-    return 'You have selected "{}"'.format(value)
 
 
 if __name__ == '__main__':
